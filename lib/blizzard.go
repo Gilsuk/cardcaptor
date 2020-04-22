@@ -124,13 +124,16 @@ type Type struct {
 }
 
 /*
-HSJson is for JSON from https://hearthstonejson.com/
+HSJsonCard is for JSON from https://hearthstonejson.com/
 */
-type HSJson struct {
+type HSJsonCard struct {
 	ID    int      `json:"dbfId"`
 	Mechs []string `json:"mechanics"`
 	Refs  []string `json:"referencedTags"`
 }
+
+// HSJsonResp is
+type HSJsonResp []HSJsonCard
 
 /*
 Export is
