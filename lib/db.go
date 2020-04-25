@@ -2,6 +2,7 @@ package lib
 
 import (
 	"database/sql"
+	"errors"
 	"io/ioutil"
 	"log"
 	"strings"
@@ -10,8 +11,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// NewConnection is
-func NewConnection(path string) *sql.DB {
+// newConnection is
+func newConnection(path string) *sql.DB {
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		log.Fatal(err)
@@ -21,7 +22,13 @@ func NewConnection(path string) *sql.DB {
 
 // CreateNewDB is
 func CreateNewDB(path string) {
-	conn := NewConnection(path)
+	if IsFileExist(path) {
+		log.Fatal(errors.New("file is already exists"))
+	}
+	conn := newConnection(path)
+	defer conn.Close()
+
+	log.Println("Initialize database...")
 	createScheme(conn)
 }
 
@@ -36,5 +43,4 @@ func createScheme(db *sql.DB) {
 	for _, sql := range sqls {
 		db.Exec(sql)
 	}
-
 }
