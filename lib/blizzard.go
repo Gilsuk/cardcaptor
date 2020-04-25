@@ -74,7 +74,7 @@ type Meta struct {
 	Sets      []Set      `json:"sets"`
 	SetGroups []SetGroup `json:"setGroups"`
 	Arenas    []int      `json:"arenaIds"`
-	Types     []Type     `json:"minionTypes"`
+	Types     []Type     `json:"types"`
 	Rarities  []Type     `json:"rarities"`
 	Classes   []Type     `json:"classes"`
 	Races     []Type     `json:"minionTypes"`
