@@ -73,7 +73,7 @@ Meta is
 type Meta struct {
 	Sets      []Set      `json:"sets"`
 	SetGroups []SetGroup `json:"setGroups"`
-	Arenas    []int      `json:"arenaIds"`
+	Arenas    []Arena    `json:"arenaIds"`
 	Types     []Type     `json:"types"`
 	Rarities  []Rarity   `json:"rarities"`
 	Classes   []Class    `json:"classes"`
@@ -115,33 +115,6 @@ type Keyword struct {
 }
 
 /*
-Rarity is
-*/
-type Rarity struct {
-	Slug string `json:"slug"`
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-/*
-Class is
-*/
-type Class struct {
-	Slug string `json:"slug"`
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-/*
-Race is
-*/
-type Race struct {
-	Slug string `json:"slug"`
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
-
-/*
 Type is
 */
 type Type struct {
@@ -149,6 +122,18 @@ type Type struct {
 	ID   int    `json:"id"`
 	Name string `json:"name"`
 }
+
+// Race is
+type Race Type
+
+// Class is
+type Class Type
+
+// Rarity is
+type Rarity Type
+
+// Arena is
+type Arena int
 
 /*
 HSJsonCard is for JSON from https://hearthstonejson.com/

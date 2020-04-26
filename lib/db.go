@@ -214,7 +214,7 @@ func (s *SetGroup) Insert(db *sql.DB) error {
 
 // Delete is
 func (s *SetGroup) Delete(db *sql.DB) error {
-	return nil
+	return errors.New("SetGroup.Delete()is currently not implemented")
 }
 
 // Insert is
@@ -231,5 +231,88 @@ func (s *Set) Insert(db *sql.DB) error {
 
 // Delete is
 func (s *Set) Delete(db *sql.DB) error {
+	return errors.New("Set.Delete()is currently not implemented")
+}
+
+// Insert must be called after all cards was inserted
+func (s *Arena) Insert(db *sql.DB) error {
+	query := `
+		UPDATE card SET arena = 1
+		WHERE card = ?
+		`
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(int(*s))
+	if err != nil {
+		return err
+	}
 	return nil
+}
+
+// Delete is
+func (s *Arena) Delete(db *sql.DB) error {
+	query := `
+		UPDATE card SET arena = 0
+		WHERE card = ?
+		`
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(int(*s))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Insert is
+func (c *Card) Insert(db *sql.DB) error {
+	err := c.insertBasicInfo(db)
+
+	return err
+}
+
+func (c *Card) insertFamily(db *sql.DB) error {
+	return nil
+
+}
+
+func (c *Card) insertBasicInfo(db *sql.DB) error {
+	query := `
+		INSERT INTO card (
+			card, slug, class, type, cardset, rarity, race, artist,
+			name, text, flavor, img, cropimg, cost, health, attack,
+			armor, collectable
+		) VALUES (
+			?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?, ?, ?, ?, ?, ?, ?,
+			?, ?
+		)
+	`
+
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(
+		c.Card, c.Slug, c.Class, c.Type, c.Set, c.Rarity, c.Race, c.Artist,
+		c.Name, c.Text, c.Flavor, c.Img, c.CropImg, c.Cost, c.Health, c.Attack,
+		c.Armor, c.Collectible,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Delete is
+func (c *Card) Delete(db *sql.DB) error {
+	return errors.New("Card.Delete()is currently not implemented")
 }
