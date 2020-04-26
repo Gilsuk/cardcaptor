@@ -75,9 +75,9 @@ type Meta struct {
 	SetGroups []SetGroup `json:"setGroups"`
 	Arenas    []int      `json:"arenaIds"`
 	Types     []Type     `json:"types"`
-	Rarities  []Type     `json:"rarities"`
-	Classes   []Type     `json:"classes"`
-	Races     []Type     `json:"minionTypes"`
+	Rarities  []Rarity   `json:"rarities"`
+	Classes   []Class    `json:"classes"`
+	Races     []Race     `json:"minionTypes"`
 	Keywords  []Keyword  `json:"keywords"`
 }
 
@@ -112,6 +112,33 @@ type Keyword struct {
 	Name string `json:"name"`
 	Ref  string `json:"refText"`
 	Text string `json:"text"`
+}
+
+/*
+Rarity is
+*/
+type Rarity struct {
+	Slug string `json:"slug"`
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+/*
+Class is
+*/
+type Class struct {
+	Slug string `json:"slug"`
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+/*
+Race is
+*/
+type Race struct {
+	Slug string `json:"slug"`
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 /*
