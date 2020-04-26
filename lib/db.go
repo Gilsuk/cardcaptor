@@ -167,3 +167,69 @@ func (r *Rarity) Delete(db *sql.DB) error {
 	_, err := stmt.Exec(r.ID)
 	return err
 }
+
+// Insert must be called after sets are completly inserted
+func (s *SetGroup) Insert(db *sql.DB) error {
+	query := `
+		INSERT INTO setgroup (slug, year, name, standard)
+		VALUES (?, ?, ?, ?)
+		`
+	updateQuery := `
+		UPDATE cardset SET setgroup = ?
+		WHERE cardset = (
+			SELECT cardset FROM cardset
+			WHERE slug = ?
+		)
+		`
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(s.Slug, s.Year, s.Name, s.Standard)
+	if err != nil {
+		return err
+	}
+
+	id, _ := result.LastInsertId()
+	log.Println(id)
+
+	updateStmt, err := db.Prepare(updateQuery)
+	if err != nil {
+		return err
+	}
+	defer updateStmt.Close()
+
+	if s.Sets == nil {
+		return nil
+	}
+
+	for _, set := range s.Sets {
+		updateStmt.Exec(id, set)
+	}
+
+	return nil
+}
+
+// Delete is
+func (s *SetGroup) Delete(db *sql.DB) error {
+	return nil
+}
+
+// Insert is
+func (s *Set) Insert(db *sql.DB) error {
+	query := `
+		INSERT INTO cardset (cardset, name, slug, releasedate, type)
+		VALUES (?, ?, ?, ?, ?)
+		`
+	stmt, _ := db.Prepare(query)
+	defer stmt.Close()
+	_, err := stmt.Exec(s.ID, s.Name, s.Slug, s.ReleaseDate, s.Type)
+	return err
+}
+
+// Delete is
+func (s *Set) Delete(db *sql.DB) error {
+	return nil
+}
