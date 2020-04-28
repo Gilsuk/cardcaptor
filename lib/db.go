@@ -316,3 +316,55 @@ func (c *Card) insertBasicInfo(db *sql.DB) error {
 func (c *Card) Delete(db *sql.DB) error {
 	return errors.New("Card.Delete()is currently not implemented")
 }
+
+// Insert is insert metadata without arena info
+// arenaids must be inserted after all cards data were inserted
+func (m *Meta) Insert(db *sql.DB) error {
+	for _, v := range m.Classes {
+		if err := v.Insert(db); err != nil {
+			return err
+		}
+	}
+	for _, v := range m.Keywords {
+		if err := v.Insert(db); err != nil {
+			return err
+		}
+	}
+	for _, v := range m.Races {
+		if err := v.Insert(db); err != nil {
+			return err
+		}
+	}
+	for _, v := range m.Rarities {
+		if err := v.Insert(db); err != nil {
+			return err
+		}
+	}
+	for _, v := range m.Types {
+		if err := v.Insert(db); err != nil {
+			return err
+		}
+	}
+	for _, v := range m.Sets {
+		if err := v.Insert(db); err != nil {
+			return err
+		}
+	}
+	for _, v := range m.SetGroups {
+		if err := v.Insert(db); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// InsertArena is
+func (m *Meta) InsertArena(db *sql.DB) error {
+	for _, v := range m.Arenas {
+		if err := v.Insert(db); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
