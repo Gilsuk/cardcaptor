@@ -233,3 +233,25 @@ func RequestCards(page int) (cardResp CardResp) {
 
 	return
 }
+
+// CrawlMetadata is
+func CrawlMetadata(accessToken string) (meta Meta, err error) {
+	base, _ := url.Parse("https://kr.api.blizzard.com")
+	base.Path += "hearthstone/metadata"
+	params := url.Values{}
+	params.Add("locale", "ko_KR")
+	params.Add("access_token", accessToken)
+	base.RawQuery = params.Encode()
+
+	resp, err := http.Get(base.String())
+	if err != nil {
+		return meta, err
+	}
+
+	defer resp.Body.Close()
+	if respBytes, err := ioutil.ReadAll(resp.Body); err == nil {
+		json.Unmarshal(respBytes, &meta)
+	}
+
+	return
+}
