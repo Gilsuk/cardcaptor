@@ -126,9 +126,9 @@ func (c *Class) Insert(db *sql.DB) error {
 		INSERT INTO class (class, slug, name)
 		VALUES (?, ?, ?)
 		`
-	stmt, _ := db.Prepare(query)
+	stmt, err := db.Prepare(query)
 	defer stmt.Close()
-	_, err := stmt.Exec(c.ID, c.Slug, c.Name)
+	_, err = stmt.Exec(c.ID, c.Slug, c.Name)
 	return err
 }
 
@@ -170,16 +170,18 @@ func (r *Rarity) Delete(db *sql.DB) error {
 
 // Insert must be called after sets are completly inserted
 func (s *SetGroup) Insert(db *sql.DB) error {
+
 	query := `
 		INSERT INTO setgroup (slug, year, name, standard)
 		VALUES (?, ?, ?, ?)
 		`
 	updateQuery := `
 		UPDATE cardset SET setgroup = ?
-		WHERE cardset = (
-			SELECT cardset FROM cardset
-			WHERE slug = ?
-		)
+		WHERE setgroup IS NULL
+			AND cardset = (
+				SELECT cardset FROM cardset
+				WHERE slug = ?
+			)
 		`
 	stmt, err := db.Prepare(query)
 	if err != nil {
@@ -193,7 +195,6 @@ func (s *SetGroup) Insert(db *sql.DB) error {
 	}
 
 	id, _ := result.LastInsertId()
-	log.Println(id)
 
 	updateStmt, err := db.Prepare(updateQuery)
 	if err != nil {
