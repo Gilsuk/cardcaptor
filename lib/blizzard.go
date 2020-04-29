@@ -171,7 +171,7 @@ func RequestCards(page int, accessToken string) (cardResp CardResp, err error) {
 	params := url.Values{}
 	params.Add("locale", "ko_KR")
 	params.Add("page", strconv.Itoa(page))
-	params.Add("collectable", "0,1")
+	params.Add("collectible", "0,1")
 	params.Add("access_token", accessToken)
 	base.RawQuery = params.Encode()
 
