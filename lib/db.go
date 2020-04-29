@@ -279,15 +279,90 @@ func (s *Arena) Delete(db *sql.DB) error {
 }
 
 // Insert is
-func (c *Card) Insert(db *sql.DB) error {
-	err := c.insertBasicInfo(db)
-
-	return err
+func (c *Card) Insert(db *sql.DB) (err error) {
+	if err = c.insertBasicInfo(db); err != nil {
+		return
+	}
+	if err = c.insertClasses(db); err != nil {
+		return
+	}
+	if err = c.insertMechanism(db); err != nil {
+		return
+	}
+	if err = c.insertFamily(db); err != nil {
+		return
+	}
+	return
 }
 
 func (c *Card) insertFamily(db *sql.DB) error {
-	return nil
+	query := `
+		INSERT INTO family (
+			child, parent
+		) VALUES (
+			?, ?
+		)
+	`
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
 
+	_, err = stmt.Exec(c.Card, c.Parent)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Card) insertClasses(db *sql.DB) error {
+	query := `
+		INSERT INTO classes (
+			card, class
+		) VALUES (
+			?, ?
+		)`
+
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	for _, cid := range c.MultiClassIDs {
+		_, err = stmt.Exec(c.Card, cid)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (c *Card) insertMechanism(db *sql.DB) error {
+	query := `
+		INSERT INTO mechanism (
+			card, keyword
+		) VALUES (
+			?, ?
+		)`
+
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	for _, kid := range c.Keyword {
+		_, err = stmt.Exec(c.Card, kid)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (c *Card) insertBasicInfo(db *sql.DB) error {
