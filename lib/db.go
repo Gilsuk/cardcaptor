@@ -32,20 +32,28 @@ func CreateNewDB(path string) {
 	defer db.Close()
 
 	log.Println("Initialize database...")
-	createScheme(db)
+	err := createScheme(db)
+
+	if err != nil {
+		log.Fatalf("Error occurs when CreateNewDB: %+w", err)
+	}
 }
 
-func createScheme(db *sql.DB) {
+func createScheme(db *sql.DB) error {
 	contents, err := ioutil.ReadFile(schemeSQL)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	sqls := strings.Split(string(contents), ";\n")
 
 	for _, sql := range sqls {
-		db.Exec(sql)
+		if _, err = db.Exec(sql); err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
 // Insert is
@@ -175,13 +183,12 @@ func (s *SetGroup) Insert(db *sql.DB) error {
 		INSERT INTO setgroup (slug, year, name, standard)
 		VALUES (?, ?, ?, ?)
 		`
-	updateQuery := `
-		UPDATE cardset SET setgroup = ?
-		WHERE setgroup IS NULL
-			AND cardset = (
-				SELECT cardset FROM cardset
-				WHERE slug = ?
-			)
+	mappingQuery := `
+		INSERT INTO groups (setGroup, cardSet)
+		VALUES (?, (
+			SELECT cardset FROM cardset
+			WHERE slug = ?
+		))
 		`
 	stmt, err := db.Prepare(query)
 	if err != nil {
@@ -196,18 +203,18 @@ func (s *SetGroup) Insert(db *sql.DB) error {
 
 	id, _ := result.LastInsertId()
 
-	updateStmt, err := db.Prepare(updateQuery)
+	mappingStmt, err := db.Prepare(mappingQuery)
 	if err != nil {
 		return err
 	}
-	defer updateStmt.Close()
+	defer mappingStmt.Close()
 
 	if s.Sets == nil {
 		return nil
 	}
 
 	for _, set := range s.Sets {
-		updateStmt.Exec(id, set)
+		mappingStmt.Exec(id, set)
 	}
 
 	return nil
