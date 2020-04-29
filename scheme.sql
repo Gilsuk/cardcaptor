@@ -198,12 +198,16 @@ CREATE TABLE mechanism (
 );
 
 CREATE TABLE family (
-    child  INTEGER PRIMARY KEY,
-    parent INTEGER NOT NULL
+    parent INTEGER,
+    child  INTEGER,
+    PRIMARY KEY (
+        parent,
+        child
+    )
 );
 
-CREATE INDEX familyparent ON family (
-    parent
+CREATE INDEX familychild ON family (
+    child
 );
 
 CREATE TABLE groups (

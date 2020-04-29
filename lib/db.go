@@ -295,26 +295,57 @@ func (c *Card) Insert(db *sql.DB) (err error) {
 	return
 }
 
-func (c *Card) insertFamily(db *sql.DB) error {
+// VacuumDB delete unused rows
+func VacuumDB(db *sql.DB) (err error) {
+	query := `
+		DELETE FROM family
+		WHERE NOT EXISTS (
+			SELECT card FROM card
+			WHERE family.child = card.card
+		)
+	`
+
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec()
+	if err != nil {
+		return
+	}
+
+	return
+}
+
+func (c *Card) insertFamily(db *sql.DB) (err error) {
+
+	if c.Child == nil || len(c.Child) == 0 {
+		return
+	}
+
 	query := `
 		INSERT INTO family (
-			child, parent
+			parent, child
 		) VALUES (
 			?, ?
 		)
 	`
 	stmt, err := db.Prepare(query)
 	if err != nil {
-		return err
+		return
 	}
 	defer stmt.Close()
 
-	_, err = stmt.Exec(c.Card, c.Parent)
-	if err != nil {
-		return err
+	for _, cid := range c.Child {
+		_, err = stmt.Exec(c.Card, cid)
+		if err != nil {
+			return
+		}
 	}
 
-	return nil
+	return
 }
 
 func (c *Card) insertClasses(db *sql.DB) error {
