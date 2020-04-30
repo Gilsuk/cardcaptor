@@ -18,3 +18,7 @@ cardcaptor -db="./cards.db" -key="USNtEMfE48HPRJDeX4a0o9PqjhdQfM6TgcA"
 
 - db: 확장자를 포함하는 새로 생성될 db 파일의 경로
 - key : [블리자드 API](https://develop.battle.net/access)에서 발급받은 accessKey
+
+## ERD
+
+![hearthstone](https://user-images.githubusercontent.com/43606714/80727008-213c7700-8b40-11ea-9d1c-6acedacad873.png)
