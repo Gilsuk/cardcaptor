@@ -2,6 +2,7 @@ package lib
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -200,6 +201,9 @@ func CrawlMetadata(accessToken string) (meta Meta, err error) {
 	resp, err := http.Get(base.String())
 	if err != nil {
 		return meta, err
+	}
+	if resp.StatusCode != 200 {
+		return meta, errors.New("Response Error from Blizzard API Server. Check your AccessKey is valid")
 	}
 
 	defer resp.Body.Close()
