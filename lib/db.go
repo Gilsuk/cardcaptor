@@ -14,8 +14,8 @@ type DBItem interface {
 	Delete(db *sql.DB) error
 }
 
-// newDB is
-func newDB(path string) *sql.DB {
+// NewDB is
+func NewDB(path string) *sql.DB {
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		log.Fatal(err)
@@ -28,7 +28,7 @@ func CreateNewDB(path string) {
 	if IsFileExist(path) {
 		log.Fatal(errors.New("file is already exists"))
 	}
-	db := newDB(path)
+	db := NewDB(path)
 	defer db.Close()
 
 	log.Println("Initialize database...")
@@ -293,6 +293,42 @@ func (c *Card) Insert(db *sql.DB) (err error) {
 		return
 	}
 	return
+}
+
+// InsertMissingData is
+func InsertMissingData(db *sql.DB) error {
+	keyword := Keyword{
+		ID:   7,
+		Slug: "enraged",
+		Name: "분노",
+		Ref:  "피해를 받은 상태면 공격력을 얻습니다.",
+		Text: "피해를 받은 상태면 공격력을 {0}얻습니다.",
+	}
+
+	if err := keyword.Insert(db); err != nil {
+		return err
+	}
+
+	etc := Type{
+		ID:   6,
+		Name: "기타",
+		Slug: "etc",
+	}
+
+	hp := Type{
+		ID:   6,
+		Name: "영웅 능력",
+		Slug: "hero-power",
+	}
+
+	if err := etc.Insert(db); err != nil {
+		return err
+	}
+	if err := hp.Insert(db); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // VacuumDB delete unused rows
