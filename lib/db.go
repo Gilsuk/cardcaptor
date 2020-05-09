@@ -24,7 +24,7 @@ func NewDB(path string) *sql.DB {
 }
 
 // CreateNewDB is
-func CreateNewDB(path string) {
+func CreateNewDB(path string) error {
 	if IsFileExist(path) {
 		log.Fatal(errors.New("file is already exists"))
 	}
@@ -35,8 +35,9 @@ func CreateNewDB(path string) {
 	err := createScheme(db)
 
 	if err != nil {
-		log.Fatalf("Error occurs when CreateNewDB: %+w", err)
+		return err
 	}
+	return nil
 }
 
 func createScheme(db *sql.DB) error {
@@ -54,6 +55,18 @@ func createScheme(db *sql.DB) error {
 	}
 
 	return nil
+}
+
+// CardIDByOffset is
+func CardIDByOffset(db *sql.DB, offset int) (id int, err error) {
+	query := `
+		SELECT card FROM card
+		ORDER BY card
+		LIMIT 1 OFFSET ?
+	`
+	row := db.QueryRow(query, offset)
+	err = row.Scan(&id)
+	return
 }
 
 // Insert is
