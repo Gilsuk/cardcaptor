@@ -9,37 +9,37 @@ import (
 
 // CardItem is
 type CardItem struct {
-	id          int
-	slug        string
-	class       string
-	classes     []string
-	cardType    string
-	cardSet     string
-	rarity      string
-	race        string
-	keywords    []KeywordItem
-	artist      string
-	name        string
-	text        string
-	flavor      string
-	img         string
-	cropImg     string
-	cost        int
-	health      int
-	attack      int
-	armor       int
-	durability  int
-	arena       bool
-	collectible bool
-	standard    bool
-	parents     []CardItem
-	children    []CardItem
+	ID          int
+	Slug        string
+	Class       string
+	Classes     []string
+	CardType    string
+	CardSet     string
+	Rarity      string
+	Race        string
+	Keywords    []KeywordItem
+	Artist      string
+	Name        string
+	Text        string
+	Flavor      string
+	Img         string
+	CropImg     string
+	Cost        int
+	Health      int
+	Attack      int
+	Armor       int
+	Durability  int
+	Arena       bool
+	Collectible bool
+	Standard    bool
+	Parents     []CardItem
+	Children    []CardItem
 }
 
 // KeywordItem is
 type KeywordItem struct {
-	name string
-	text string
+	Name string
+	Text string
 }
 
 // Export is
@@ -47,7 +47,7 @@ func (c *CardItem) Export(dir string) {
 	os.MkdirAll(dir, os.ModePerm)
 
 	bytes, _ := json.Marshal(*c)
-	ioutil.WriteFile(dir+"/"+c.slug+".json", bytes, os.ModePerm)
+	ioutil.WriteFile(dir+"/"+c.Slug+".json", bytes, os.ModePerm)
 }
 
 // NewCardItem is
@@ -95,10 +95,10 @@ func (c *CardItem) fillBasics(db *sql.DB, id int) (err error) {
 	`
 	row := db.QueryRow(query, id)
 
-	err = row.Scan(&c.id, &c.slug, &c.name, &c.class, &c.cardType,
-		&c.rarity, &c.race, &c.cost, &c.health, &c.attack, &c.armor,
-		&c.durability, &c.arena, &c.collectible, &c.text, &c.flavor,
-		&c.artist, &c.cardSet, &c.img, &c.cropImg, &c.standard)
+	err = row.Scan(&c.ID, &c.Slug, &c.Name, &c.Class, &c.CardType,
+		&c.Rarity, &c.Race, &c.Cost, &c.Health, &c.Attack, &c.Armor,
+		&c.Durability, &c.Arena, &c.Collectible, &c.Text, &c.Flavor,
+		&c.Artist, &c.CardSet, &c.Img, &c.CropImg, &c.Standard)
 
 	return
 }
@@ -110,7 +110,7 @@ func (c *CardItem) fillClasses(db *sql.DB) (err error) {
 		WHERE classes.card = ?;
 	`
 
-	rows, err := db.Query(query, c.id)
+	rows, err := db.Query(query, c.ID)
 	if err != nil {
 		return
 	}
@@ -129,7 +129,7 @@ func (c *CardItem) fillClasses(db *sql.DB) (err error) {
 		return
 	}
 
-	c.classes = names
+	c.Classes = names
 
 	return
 }
@@ -141,7 +141,7 @@ func (c *CardItem) fillKeywords(db *sql.DB) (err error) {
 		WHERE mechanism.card = ?;
 	`
 
-	rows, err := db.Query(query, c.id)
+	rows, err := db.Query(query, c.ID)
 	if err != nil {
 		return
 	}
@@ -154,10 +154,10 @@ func (c *CardItem) fillKeywords(db *sql.DB) (err error) {
 			return
 		}
 		item := KeywordItem{
-			name: name,
-			text: ref,
+			Name: name,
+			Text: ref,
 		}
-		c.keywords = append(c.keywords, item)
+		c.Keywords = append(c.Keywords, item)
 	}
 
 	if err = rows.Err(); err != nil {
@@ -173,7 +173,7 @@ func (c *CardItem) fillParents(db *sql.DB) (err error) {
 		WHERE child = ?
 	`
 
-	rows, err := db.Query(query, c.id)
+	rows, err := db.Query(query, c.ID)
 	if err != nil {
 		return
 	}
@@ -194,7 +194,7 @@ func (c *CardItem) fillParents(db *sql.DB) (err error) {
 
 	for _, id := range ids {
 		item, _ := newInnerCardItem(db, id)
-		c.parents = append(c.parents, item)
+		c.Parents = append(c.Parents, item)
 	}
 
 	return
@@ -206,7 +206,7 @@ func (c *CardItem) fillChildren(db *sql.DB) (err error) {
 		WHERE parent = ?
 	`
 
-	rows, err := db.Query(query, c.id)
+	rows, err := db.Query(query, c.ID)
 	if err != nil {
 		return
 	}
@@ -227,7 +227,7 @@ func (c *CardItem) fillChildren(db *sql.DB) (err error) {
 
 	for _, id := range ids {
 		item, _ := newInnerCardItem(db, id)
-		c.children = append(c.children, item)
+		c.Children = append(c.Children, item)
 	}
 
 	return

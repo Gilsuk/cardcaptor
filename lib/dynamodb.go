@@ -3,6 +3,7 @@ package lib
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -24,13 +25,13 @@ func CreateDDBTable(db *dynamodb.DynamoDB, tableName string, rcu, wcu int64) err
 		TableName: aws.String(tableName),
 		AttributeDefinitions: []*dynamodb.AttributeDefinition{
 			{
-				AttributeName: aws.String("id"),
+				AttributeName: aws.String("ID"),
 				AttributeType: aws.String("N"),
 			},
 		},
 		KeySchema: []*dynamodb.KeySchemaElement{
 			{
-				AttributeName: aws.String("id"),
+				AttributeName: aws.String("ID"),
 				KeyType:       aws.String("HASH"),
 			},
 		},
@@ -44,4 +45,18 @@ func CreateDDBTable(db *dynamodb.DynamoDB, tableName string, rcu, wcu int64) err
 	_, err := db.CreateTable(input)
 
 	return err
+}
+
+// PutItem store item to DynamoDB
+func (c *CardItem) PutItem(db *dynamodb.DynamoDB, tableName string) (err error) {
+	av, err := dynamodbattribute.MarshalMap(c)
+	if err != nil {
+		return
+	}
+	input := &dynamodb.PutItemInput{
+		Item:      av,
+		TableName: aws.String(tableName),
+	}
+	_, err = db.PutItem(input)
+	return
 }
