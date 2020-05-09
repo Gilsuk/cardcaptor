@@ -49,6 +49,7 @@ type Card struct {
 	Health        int    `json:"health"`
 	Attack        int    `json:"attack"`
 	Armor         int    `json:"armor"`
+	Durability    int    `json:"durability"`
 	Collectible   int    `json:"collectible"`
 	MultiClassIDs []int  `json:"multiClassIds"`
 	Parent        int    `json:"parentId"`
@@ -122,11 +123,16 @@ type Type struct {
 	Name string `json:"name"`
 }
 
+// Class is
+type Class struct {
+	Slug   string `json:"slug"`
+	ID     int    `json:"id"`
+	Name   string `json:"name"`
+	CardID int    `json:"cardId"`
+}
+
 // Race is
 type Race Type
-
-// Class is
-type Class Type
 
 // Rarity is
 type Rarity Type
@@ -209,6 +215,28 @@ func CrawlMetadata(accessToken string) (meta Meta, err error) {
 	defer resp.Body.Close()
 	if respBytes, err := ioutil.ReadAll(resp.Body); err == nil {
 		json.Unmarshal(respBytes, &meta)
+	}
+
+	return
+}
+
+// FetchByID is
+func FetchByID(id int, accessToken string) (c Card, err error) {
+	base, _ := url.Parse("https://kr.api.blizzard.com")
+	base.Path += "hearthstone/cards/" + strconv.Itoa(id)
+	params := url.Values{}
+	params.Add("locale", "ko_KR")
+	params.Add("access_token", accessToken)
+	base.RawQuery = params.Encode()
+
+	resp, err := http.Get(base.String())
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	if respBytes, err := ioutil.ReadAll(resp.Body); err == nil {
+		json.Unmarshal(respBytes, &c)
 	}
 
 	return
