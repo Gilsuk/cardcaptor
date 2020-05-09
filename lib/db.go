@@ -131,12 +131,12 @@ func (r *Race) Delete(db *sql.DB) error {
 // Insert is
 func (c *Class) Insert(db *sql.DB) error {
 	query := `
-		INSERT INTO class (class, slug, name)
-		VALUES (?, ?, ?)
+		INSERT INTO class (class, slug, name, card)
+		VALUES (?, ?, ?, ?)
 		`
 	stmt, err := db.Prepare(query)
 	defer stmt.Close()
-	_, err = stmt.Exec(c.ID, c.Slug, c.Name)
+	_, err = stmt.Exec(c.ID, c.Slug, c.Name, c.CardID)
 	return err
 }
 
@@ -316,6 +316,8 @@ func VacuumDB(db *sql.DB) (err error) {
 		return
 	}
 
+	db.Exec("vacuum")
+
 	return
 }
 
@@ -401,11 +403,11 @@ func (c *Card) insertBasicInfo(db *sql.DB) error {
 		INSERT INTO card (
 			card, slug, class, type, cardset, rarity, race, artist,
 			name, text, flavor, img, cropimg, cost, health, attack,
-			armor, collectable
+			armor, collectable, durability
 		) VALUES (
 			?, ?, ?, ?, ?, ?, ?, ?,
 			?, ?, ?, ?, ?, ?, ?, ?,
-			?, ?
+			?, ?, ?
 		)
 	`
 
@@ -417,7 +419,7 @@ func (c *Card) insertBasicInfo(db *sql.DB) error {
 	_, err = stmt.Exec(
 		c.Card, c.Slug, c.Class, c.Type, c.Set, c.Rarity, c.Race, c.Artist,
 		c.Name, c.Text, c.Flavor, c.Img, c.CropImg, c.Cost, c.Health, c.Attack,
-		c.Armor, c.Collectible,
+		c.Armor, c.Collectible, c.Durability,
 	)
 	if err != nil {
 		return err
@@ -481,4 +483,14 @@ func (m *Meta) InsertArena(db *sql.DB) error {
 	}
 
 	return nil
+}
+
+// ClassCards is
+func (m *Meta) ClassCards() (ids []int) {
+	for _, v := range m.Classes {
+		if v.CardID != 0 {
+			ids = append(ids, v.CardID)
+		}
+	}
+	return
 }
