@@ -14,8 +14,8 @@ type DBItem interface {
 	Delete(db *sql.DB) error
 }
 
-// newDB is
-func newDB(path string) *sql.DB {
+// NewDB is
+func NewDB(path string) *sql.DB {
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		log.Fatal(err)
@@ -24,19 +24,20 @@ func newDB(path string) *sql.DB {
 }
 
 // CreateNewDB is
-func CreateNewDB(path string) {
+func CreateNewDB(path string) error {
 	if IsFileExist(path) {
 		log.Fatal(errors.New("file is already exists"))
 	}
-	db := newDB(path)
+	db := NewDB(path)
 	defer db.Close()
 
 	log.Println("Initialize database...")
 	err := createScheme(db)
 
 	if err != nil {
-		log.Fatalf("Error occurs when CreateNewDB: %+w", err)
+		return err
 	}
+	return nil
 }
 
 func createScheme(db *sql.DB) error {
@@ -54,6 +55,28 @@ func createScheme(db *sql.DB) error {
 	}
 
 	return nil
+}
+
+// CardIDByOffset is
+func CardIDByOffset(db *sql.DB, offset int) (id int, err error) {
+	query := `
+		SELECT card FROM card
+		ORDER BY card
+		LIMIT 1 OFFSET ?
+	`
+	row := db.QueryRow(query, offset)
+	err = row.Scan(&id)
+	return
+}
+
+// CardsCount is
+func CardsCount(db *sql.DB) (count int, err error) {
+	query := `
+		SELECT count(*) FROM card
+	`
+	row := db.QueryRow(query)
+	err = row.Scan(&count)
+	return
 }
 
 // Insert is
@@ -131,12 +154,12 @@ func (r *Race) Delete(db *sql.DB) error {
 // Insert is
 func (c *Class) Insert(db *sql.DB) error {
 	query := `
-		INSERT INTO class (class, slug, name)
-		VALUES (?, ?, ?)
+		INSERT INTO class (class, slug, name, card)
+		VALUES (?, ?, ?, ?)
 		`
 	stmt, err := db.Prepare(query)
 	defer stmt.Close()
-	_, err = stmt.Exec(c.ID, c.Slug, c.Name)
+	_, err = stmt.Exec(c.ID, c.Slug, c.Name, c.CardID)
 	return err
 }
 
@@ -295,6 +318,42 @@ func (c *Card) Insert(db *sql.DB) (err error) {
 	return
 }
 
+// InsertMissingData is
+func InsertMissingData(db *sql.DB) error {
+	keyword := Keyword{
+		ID:   7,
+		Slug: "enraged",
+		Name: "분노",
+		Ref:  "피해를 받은 상태면 공격력을 얻습니다.",
+		Text: "피해를 받은 상태면 공격력을 {0}얻습니다.",
+	}
+
+	if err := keyword.Insert(db); err != nil {
+		return err
+	}
+
+	etc := Type{
+		ID:   6,
+		Name: "기타",
+		Slug: "etc",
+	}
+
+	hp := Type{
+		ID:   6,
+		Name: "영웅 능력",
+		Slug: "hero-power",
+	}
+
+	if err := etc.Insert(db); err != nil {
+		return err
+	}
+	if err := hp.Insert(db); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // VacuumDB delete unused rows
 func VacuumDB(db *sql.DB) (err error) {
 	query := `
@@ -315,6 +374,8 @@ func VacuumDB(db *sql.DB) (err error) {
 	if err != nil {
 		return
 	}
+
+	db.Exec("vacuum")
 
 	return
 }
@@ -401,11 +462,11 @@ func (c *Card) insertBasicInfo(db *sql.DB) error {
 		INSERT INTO card (
 			card, slug, class, type, cardset, rarity, race, artist,
 			name, text, flavor, img, cropimg, cost, health, attack,
-			armor, collectable
+			armor, collectable, durability
 		) VALUES (
 			?, ?, ?, ?, ?, ?, ?, ?,
 			?, ?, ?, ?, ?, ?, ?, ?,
-			?, ?
+			?, ?, ?
 		)
 	`
 
@@ -417,7 +478,7 @@ func (c *Card) insertBasicInfo(db *sql.DB) error {
 	_, err = stmt.Exec(
 		c.Card, c.Slug, c.Class, c.Type, c.Set, c.Rarity, c.Race, c.Artist,
 		c.Name, c.Text, c.Flavor, c.Img, c.CropImg, c.Cost, c.Health, c.Attack,
-		c.Armor, c.Collectible,
+		c.Armor, c.Collectible, c.Durability,
 	)
 	if err != nil {
 		return err
@@ -481,4 +542,14 @@ func (m *Meta) InsertArena(db *sql.DB) error {
 	}
 
 	return nil
+}
+
+// ClassCards is
+func (m *Meta) ClassCards() (ids []int) {
+	for _, v := range m.Classes {
+		if v.CardID != 0 {
+			ids = append(ids, v.CardID)
+		}
+	}
+	return
 }

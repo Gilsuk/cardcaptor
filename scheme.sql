@@ -3,7 +3,8 @@ CREATE TABLE class (
     slug  TEXT    UNIQUE
                   NOT NULL,
     name  TEXT    UNIQUE
-                  NOT NULL
+                  NOT NULL,
+    card  INTEGER
 );
 
 CREATE TABLE rarity (
@@ -111,6 +112,7 @@ CREATE TABLE card (
     health      INTEGER,
     attack      INTEGER,
     armor       INTEGER,
+    durability       INTEGER,
     arena       INTEGER CHECK (0 OR 
                                1) 
                         NOT NULL
@@ -220,3 +222,49 @@ CREATE TABLE groups (
         cardSet
     )
 );
+
+CREATE VIEW vCard AS
+    SELECT card.card AS id,
+           card.slug AS slug,
+           card.name AS name,
+           IFNULL(class.name, '') AS class,
+           IFNULL(type.name, '') AS type,
+           IFNULL(rarity.name, '') AS rarity,
+           IFNULL(race.name, '') AS race,
+           cost,
+           health,
+           attack,
+           armor,
+           durability,
+           arena,
+           collectable,
+           IFNULL(standard, 0) AS standard,
+           card.text AS text,
+           flavor,
+           artist,
+           IFNULL(cardset.name, '') AS cardSet,
+           img,
+           cropImg
+      FROM card
+           LEFT OUTER JOIN
+           CLASS ON card.class = class.class
+           LEFT OUTER JOIN
+           type ON card.type = type.type
+           LEFT OUTER JOIN
+           rarity ON card.rarity = rarity.rarity
+           LEFT OUTER JOIN
+           race ON card.race = race.race
+           LEFT OUTER JOIN
+           cardset ON card.cardset = cardset.cardSet
+           LEFT OUTER JOIN
+           (
+               SELECT cardSet.cardSet,
+                      1 AS standard
+                 FROM cardSet
+                      INNER JOIN
+                      groups ON cardSet.cardSet = groups.cardSet
+                      INNER JOIN
+                      setGroup ON groups.setgroup = setGroup.setgroup
+                WHERE setGroup.setGroup = 7
+           )
+           AS CS ON card.cardSet = CS.cardSet;
