@@ -69,6 +69,16 @@ func CardIDByOffset(db *sql.DB, offset int) (id int, err error) {
 	return
 }
 
+// CardsCount is
+func CardsCount(db *sql.DB) (count int, err error) {
+	query := `
+		SELECT count(*) FROM card
+	`
+	row := db.QueryRow(query)
+	err = row.Scan(&count)
+	return
+}
+
 // Insert is
 func (k *Keyword) Insert(db *sql.DB) error {
 	query := `
